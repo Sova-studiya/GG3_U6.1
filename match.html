@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cooking Match-Up</title>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            margin: 0;
+        }
+        h1 { font-size: 1.4rem; color: #2c3e50; margin: 10px 0 2px 0; }
+        p { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 15px; text-align: center; }
+        .match-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .column { display: flex; flex-direction: column; gap: 8px; }
+        .item {
+            background: white;
+            padding: 8px;
+            border: 2px solid #dcdde1;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 70px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .verb-item { flex-direction: column; gap: 4px; font-weight: bold; }
+        .verb-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+        .item.selected { border-color: #3498db; background-color: #e1f5fe; }
+        .item.matched { background-color: #dff9fb; border-color: #2ecc71; color: #27ae60; opacity: 0.5; cursor: default; }
+        .item.error { border-color: #e74c3c; background-color: #fab1a0; }
+        #score-board { margin-top: 15px; font-size: 1.1rem; font-weight: bold; color: #2ecc71; }
+        .reset-btn {
+            margin-top: 15px; padding: 10px 20px; background: #3498db; color: white;
+            border: none; border-radius: 5px; display: none; width: 100%; max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kitchen Match-Up 🍴</h1>
+    <p>Tap a definition, then tap the correct verb!</p>
+    <div class="match-container">
+        <div class="column" id="defs-column"></div>
+        <div class="column" id="verbs-column"></div>
+    </div>
+    <div id="score-board"></div>
+    <button class="reset-btn" id="reset-btn" onclick="location.reload()">Play Again!</button>
+    <script>
+        const data = [
+            { id: 1, word: "add", def: "put some salt to the potatoes", img: "img/Add.png" },
+            { id: 2, word: "bake", def: "cook a cake in the oven", img: "img/Bake.png" },
+            { id: 3, word: "beat", def: "mix eggs fast with a fork", img: "img/Beat.png" },
+            { id: 4, word: "boil", def: "cook in hot water", img: "img/Boil1.png" },
+            { id: 5, word: "chop", def: "cut into small pieces", img: "img/Chop.png" },
+            { id: 6, word: "fry", def: "cook in hot oil", img: "img/fry.png" },
+            { id: 7, word: "mix", def: "mix several ingredients together", img: "img/Mix1.png" },
+            { id: 8, word: "peel", def: "cut off the red part of an apple", img: "img/peel.png" },
+            { id: 9, word: "pour", def: "pour some milk into a glass", img: "img/pour some milk.png" },
+            { id: 10, word: "roast", def: "cook meat in the oven", img: "img/Roast.png" },
+            { id: 11, word: "set the table", def: "prepare the table before a meal", img: "img/set the table.png" },
+            { id: 12, word: "slice", def: "cut bread into thin pieces", img: "img/Slice.png" }
+        ];
+        let selectedDef = null; let selectedVerb = null; let matchesFound = 0;
+        function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+        function initGame() {
+            const defsColumn = document.getElementById('defs-column');
+            const verbsColumn = document.getElementById('verbs-column');
+            shuffle([...data]).forEach(item => {
+                const div = document.createElement('div'); div.className = 'item definition-item';
+                div.innerText = item.def; div.dataset.id = item.id;
+                div.onclick = () => selectItem(div, 'def'); defsColumn.appendChild(div);
+            });
+            shuffle([...data]).forEach(item => {
+                const div = document.createElement('div'); div.className = 'item verb-item';
+                div.innerHTML = `<img src="${item.img}" alt=""> <span>${item.word}</span>`;
+                div.dataset.id = item.id; div.onclick = () => selectItem(div, 'verb');
+                verbsColumn.appendChild(div);
+            });
+        }
+        function selectItem(el, type) {
+            if (el.classList.contains('matched')) return;
+            if (type === 'def') {
+                if (selectedDef) selectedDef.classList.remove('selected');
+                selectedDef = el;
+            } else {
+                if (selectedVerb) selectedVerb.classList.remove('selected');
+                selectedVerb = el;
+            }
+            el.classList.add('selected');
+            if (selectedDef && selectedVerb) {
+                if (selectedDef.dataset.id === selectedVerb.dataset.id) {
+                    selectedDef.className = 'item matched'; selectedVerb.className = 'item matched';
+                    selectedDef = null; selectedVerb = null; matchesFound++;
+                    if (matchesFound === data.length) {
+                        document.getElementById('score-board').innerText = "Perfect! All matched! 🌟";
+                        document.getElementById('reset-btn').style.display = "block";
+                    }
+                } else {
+                    const d = selectedDef; const v = selectedVerb;
+                    d.classList.add('error'); v.classList.add('error');
+                    selectedDef = null; selectedVerb = null;
+                    setTimeout(() => { d.classList.remove('selected', 'error'); v.classList.remove('selected', 'error'); }, 400);
+                }
+            }
+        }
+        window.onload = initGame;
+    </script>
+</body>
+</html>

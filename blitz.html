@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>True or False Blitz</title>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f5f6fa;
+            margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center; color: #2f3640;
+        }
+        h1 { font-size: 1.4rem; margin: 10px 0 5px 0; }
+        .score-container { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; }
+        #score { color: #2ecc71; }
+        .blitz-card {
+            background: white; padding: 15px; border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            max-width: 400px; width: 100%; text-align: center;
+        }
+        .img-box { height: 160px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .img-box img { max-height: 100%; max-width: 100%; border-radius: 8px; border: 2px solid #dcdde1; }
+        .verb-title { font-size: 1.6rem; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .def-box {
+            font-size: 1rem; font-style: italic; color: #7f8c8d; background: #f1f2f6;
+            padding: 12px; border-radius: 8px; min-height: 50px;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+        }
+        .btn-group { display: flex; gap: 15px; justify-content: center; }
+        .btn {
+            padding: 12px 0; font-size: 1.1rem; font-weight: bold; border: none;
+            border-radius: 25px; cursor: pointer; color: white; width: 45%;
+        }
+        .btn-true { background-color: #2ecc71; box-shadow: 0 4px 0 #27ae60; }
+        .btn-false { background-color: #e74c3c; box-shadow: 0 4px 0 #c0392b; }
+        .btn:active { transform: translateY(3px); box-shadow: none; }
+        .feedback { font-size: 1.2rem; font-weight: bold; margin-top: 15px; height: 25px; }
+        .correct-feed { color: #2ecc71; }
+        .wrong-feed { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <h1>True or False Blitz! ⚡</h1>
+    <div class="score-container">Score: <span id="score">0</span></div>
+    <div class="blitz-card">
+        <div class="img-box"><img id="blitz-img" src="" alt=""></div>
+        <div class="verb-title" id="blitz-word">WORD</div>
+        <div class="def-box" id="blitz-def">...</div>
+        <div class="btn-group">
+            <button class="btn btn-false" onclick="userAnswer(false)">FALSE 👎</button>
+            <button class="btn btn-true" onclick="userAnswer(true)">TRUE 👍</button>
+        </div>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <script>
+        const vocabulary = [
+            { word: "add", def: "put some salt to the potatoes", img: "img/Add.png" },
+            { word: "bake", def: "cook a cake in the oven", img: "img/Bake.png" },
+            { word: "beat", def: "mix eggs fast with a fork", img: "img/Beat.png" },
+            { word: "boil", def: "cook in hot water", img: "img/Boil1.png" },
+            { word: "chop", def: "cut into small pieces", img: "img/Chop.png" },
+            { word: "fry", def: "cook in hot oil", img: "img/fry.png" },
+            { word: "mix", def: "mix several ingredients together", img: "img/Mix1.png" },
+            { word: "peel", def: "cut off the red part of an apple", img: "img/peel.png" },
+            { word: "pour", def: "pour some milk into a glass", img: "img/pour some milk.png" },
+            { word: "roast", def: "cook meat in the oven", img: "img/Roast.png" },
+            { word: "set the table", def: "prepare the table before a meal", img: "img/set the table.png" },
+            { word: "slice", def: "cut bread into thin pieces", img: "img/Slice.png" }
+        ];
+        let score = 0; let currentItem = null; let isPairsMatch = false;
+        function nextQuestion() {
+            document.getElementById("feedback").innerText = "";
+            currentItem = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+            isPairsMatch = Math.random() >= 0.5;
+            let displayDef = isPairsMatch ? currentItem.def : vocabulary[Math.floor(Math.random() * vocabulary.length)].def;
+            if(!isPairsMatch && displayDef === currentItem.def) displayDef = "mix everything together";
+            document.getElementById("blitz-img").src = currentItem.img;
+            document.getElementById("blitz-word").innerText = currentItem.word;
+            document.getElementById("blitz-def").innerText = displayDef;
+        }
+        function userAnswer(answer) {
+            const f = document.getElementById("feedback");
+            if (answer === isPairsMatch) { score += 10; f.className = "feedback correct-feed"; f.innerText = "Excellent! +10 🎉"; }
+            else { score = Math.max(0, score - 5); f.className = "feedback wrong-feed"; f.innerText = "Oops! Wrong 😢"; }
+            document.getElementById("score").innerText = score;
+            setTimeout(nextQuestion, 600);
+        }
+        window.onload = nextQuestion;
+    </script>
+</body>
+</html>

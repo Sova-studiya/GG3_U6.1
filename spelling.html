@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooking Verbs Spelling Puzzle</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .game-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-container img {
+            max-width: 200px;
+            height: auto;
+            border-radius: 10px;
+            border: 3px solid #bdc3c7;
+            margin-bottom: 15px;
+        }
+
+        .definition {
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-weight: 500;
+            background: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 8px;
+            width: 90%;
+        }
+
+        .slots-container, .letters-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            min-height: 50px;
+        }
+
+        .letter-tile {
+            width: 45px;
+            height: 45px;
+            background-color: #3498db;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 0 #2980b9;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .letter-tile:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .slot {
+            width: 45px;
+            height: 45px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            background-color: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .slot.correct {
+            background-color: #2ecc71;
+            border-color: #27ae60;
+            color: white;
+        }
+
+        .btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #27ae60;
+            display: none;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .progress {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Master the Cooking Verbs! 🍳</h1>
+    
+    <div class="game-container">
+        <div class="image-container">
+            <img id="verb-image" src="" alt="Cooking verb illustration">
+        </div>
+        
+        <div class="definition" id="verb-definition">Definition goes here...</div>
+        
+        <!-- Сюда буквы будут вставать при клике -->
+        <div class="slots-container" id="slots-container"></div>
+        
+        <!-- Отсюда дети берут буквы (в перемешанном виде) -->
+        <div class="letters-container" id="letters-container"></div>
+        
+        <button class="btn" id="next-btn" onclick="nextWord()">Next Word ✨</button>
+        
+        <div class="progress" id="progress">Word 1 of 12</div>
+    </div>
+
+    <script>
+        // Данные из ваших файлов image_877bf8.png и image_878015.png
+        const vocabulary = [
+            { word: "add", def: "put some salt to the potatoes", img: "img/Add.png" },
+            { word: "bake", def: "cook a cake in the oven", img: "img/Bake.png" },
+            { word: "beat", def: "mix eggs fast with a fork", img: "img/Beat.png" },
+            { word: "boil", def: "cook in hot water", img: "img/Boil1.png" },
+            { word: "chop", def: "cut into small pieces", img: "img/Chop.png" },
+            { word: "fry", def: "cook in hot oil", img: "img/fry.png" },
+            { word: "mix", def: "mix several ingredients together", img: "img/Mix1.png" },
+            { word: "peel", def: "cut off the red part of an apple", img: "img/peel.png" }, // исправлено peal -> peel
+            { word: "pour", def: "pour some milk into a glass", img: "img/pour some milk.png" },
+            { word: "roast", def: "cook meat in the oven", img: "img/Roast.png" },
+            { word: "set the table", def: "prepare the table before a meal", img: "img/set the table.png" },
+            { word: "slice", def: "cut bread into thin pieces", img: "img/Slice.png" }
+        ];
+
+        let currentIndex = 0;
+        let currentAnswer = [];
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initGame() {
+            if (currentIndex >= vocabulary.length) {
+                document.querySelector('.game-container').innerHTML = "<h2>Excellent! You are a master chef! 🏆</h2>";
+                return;
+            }
+
+            const currentData = vocabulary[currentIndex];
+            document.getElementById("verb-image").src = currentData.img;
+            document.getElementById("verb-definition").innerText = currentData.def;
+            document.getElementById("progress").innerText = `Word ${currentIndex + 1} of ${vocabulary.length}`;
+            document.getElementById("next-btn").style.display = "none";
+
+            // Очищаем контейнеры
+            const slotsContainer = document.getElementById("slots-container");
+            const lettersContainer = document.getElementById("letters-container");
+            slotsContainer.innerHTML = "";
+            lettersContainer.innerHTML = "";
+            
+            currentAnswer = new Array(currentData.word.length).fill(null);
+
+            // Создаем пустые слоты для букв (учитывая пробелы, если это "set the table")
+            for (let i = 0; i < currentData.word.length; i++) {
+                const slot = document.createElement("div");
+                slot.classList.add("slot");
+                if (currentData.word[i] === " ") {
+                    slot.style.border = "none";
+                    slot.style.backgroundColor = "transparent";
+                    slot.innerText = " ";
+                    currentAnswer[i] = " "; // Пробел засчитывается автоматически
+                }
+                slotsContainer.appendChild(slot);
+            }
+
+            // Готовим плиточки с буквами (пробелы убираем, чтобы ребенок их не кликал)
+            let lettersArray = currentData.word.replace(/ /g, "").split("");
+            let shuffledLetters = shuffle([...lettersArray]);
+
+            shuffledLetters.forEach((letter) => {
+                const tile = document.createElement("div");
+                tile.classList.add("letter-tile");
+                tile.innerText = letter.toUpperCase();
+                tile.onclick = () => handleLetterClick(tile, letter);
+                lettersContainer.appendChild(tile);
+            });
+        }
+
+        function handleLetterClick(tile, letter) {
+            // Ищем первый свободный слот
+            const targetIndex = currentAnswer.indexOf(null);
+            if (targetIndex === -1) return;
+
+            // Занимаем слот
+            currentAnswer[targetIndex] = letter;
+            const slots = document.querySelectorAll(".slot");
+            slots[targetIndex].innerText = letter.toUpperCase();
+            
+            // Прячем кликнутую букву
+            tile.style.visibility = "hidden";
+
+            // Проверяем, заполнено ли слово полностью
+            if (!currentAnswer.includes(null)) {
+                checkAnswer();
+            }
+        }
+
+        function checkAnswer() {
+            const finalWord = currentAnswer.join("");
+            const correctAnswer = vocabulary[currentIndex].word;
+
+            if (finalWord === correctAnswer) {
+                const slots = document.querySelectorAll(".slot");
+                slots.forEach(slot => slot.classList.add("correct"));
+                document.getElementById("next-btn").style.display = "block";
+            } else {
+                // Если ошибка — сбрасываем текущее слово, чтобы попробовать заново
+                setTimeout(() => {
+                    alert("Oops! Try again 😊");
+                    initGame();
+                }, 300);
+            }
+        }
+
+        function nextWord() {
+            currentIndex++;
+            initGame();
+        }
+
+        // Запуск игры при загрузке страницы
+        window.onload = initGame;
+    </script>
+</body>
+</html>

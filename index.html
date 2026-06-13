@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chef's English Academy 🍳</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fffcf4; /* Мягкий кремовый фон */
+            background-image: radial-gradient(#ffeaa7 1px, transparent 1px);
+            background-size: 20px 20px; /* Легкий узор в крапинку */
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #2c3e50;
+        }
+
+        .menu-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border: 3px solid #ffb142; /* Тыквенный цвет */
+            border-radius: 20px;
+            padding: 25px 20px;
+            box-shadow: 0 10px 25px rgba(243, 156, 18, 0.15);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .header-logo {
+            font-size: 4rem;
+            margin: 0;
+            animation: bounce 2s infinite;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #d35400; /* Томатный/терракотовый */
+            margin: 5px 0 10px 0;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            background: #ffffff;
+            border: 2px solid #f1f2f6;
+            border-bottom: 5px solid #ced6e0;
+            border-radius: 15px;
+            padding: 15px;
+            transition: all 0.2s ease;
+        }
+
+        /* Цвета для разных игр при наведении/нажатии */
+        .menu-item:nth-child(1) { border-color: #ff7f50; } /* Сочный лосось */
+        .menu-item:nth-child(2) { border-color: #2ed573; } /* Зелень */
+        .menu-item:nth-child(3) { border-color: #ff4757; } /* Спелая вишня */
+        .menu-item:nth-child(4) { border-color: #1e90ff; } /* Черника */
+
+        .menu-item:active {
+            transform: translateY(3px);
+            border-bottom-width: 2px;
+        }
+
+        .game-icon {
+            font-size: 2.2rem;
+            margin-right: 15px;
+            background: #f1f2f6;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .game-info {
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .game-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2f3542;
+            margin-bottom: 3px;
+        }
+
+        .game-desc {
+            font-size: 0.8rem;
+            color: #747d8c;
+        }
+
+        .arrow {
+            font-size: 1.2rem;
+            color: #a4b0be;
+            font-weight: bold;
+            padding-left: 5px;
+        }
+
+        .footer {
+            margin-top: 25px;
+            font-size: 0.8rem;
+            color: #a4b0be;
+            font-weight: 500;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-container">
+        <div class="header-logo">👨‍🍳</div>
+        <h1>Chef's Academy</h1>
+        <div class="subtitle">Welcome to the kitchen! Choose a game to practice your new cooking verbs.</div>
+
+        <div class="menu-list">
+            
+            <!-- Игра 1 -->
+            <a href="spelling.html" class="menu-item">
+                <div class="game-icon">🔤</div>
+                <div class="game-info">
+                    <div class="game-title">1. Spelling Puzzle</div>
+                    <div class="game-desc">Look at the picture and build the word piece by piece.</div>
+                </div>
+                <div class="arrow">➔</div>
+            </a>
+
+            <!-- Игра 2 -->
+            <a href="match.html" class="menu-item">
+                <div class="game-icon">🤝</div>
+                <div class="game-info">
+                    <div class="game-title">2. Kitchen Match-Up</div>
+                    <div class="game-desc">Connect correct definitions with culinary verbs.</div>
+                </div>
+                <div class="arrow">➔</div>
+            </a>
+
+            <!-- Игра 3 -->
+            <a href="blitz.html" class="menu-item">
+                <div class="game-icon">⚡</div>
+                <div class="game-info">
+                    <div class="game-title">3. True or False Blitz</div>
+                    <div class="game-desc">Fast! Is the definition right or wrong? Race for points!</div>
+                </div>
+                <div class="arrow">➔</div>
+            </a>
+
+            <!-- Игра 4 -->
+            <a href="memory.html" class="menu-item">
+                <div class="game-icon">🔊</div>
+                <div class="game-info">
+                    <div class="game-title">4. Audio Memory</div>
+                    <div class="game-desc">Listen to the chef, find pairs and train your brain.</div>
+                </div>
+                <div class="arrow">➔</div>
+            </a>
+
+        </div>
+
+        <div class="footer">Ready to become a master chef? ⭐</div>
+    </div>
+
+</body>
+</html>

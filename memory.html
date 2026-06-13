@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Audio Memory Game</title>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body {
+            font-family: 'Segoe UI', sans-serif; background-color: #f7f9fc;
+            margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; user-select: none; -webkit-user-select: none;
+        }
+        h1 { font-size: 1.3rem; margin: 5px 0; }
+        .status-text { font-size: 0.95rem; color: #7f8c8d; margin-bottom: 10px; height: 20px; font-weight: bold; text-align: center; }
+        .speaking { color: #e67e22; }
+        .memory-grid {
+            display: grid; grid-template-columns: repeat(4, 78px); gap: 8px;
+            justify-content: center; perspective: 1000px; display: none;
+        }
+        .grid-locked { pointer-events: none; }
+        .card { width: 78px; height: 78px; position: relative; transform-style: preserve-3d; transition: transform 0.4s; cursor: pointer; }
+        .card.flipped { transform: rotateY(180deg); }
+        .card-front, .card-back {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 8px; border: 2px solid #dcdde1; display: flex; align-items: center; justify-content: center; padding: 4px; box-sizing: border-box;
+        }
+        .card-back { background: linear-gradient(135deg, #3498db, #2980b9); color: white; font-size: 1.5rem; font-weight: bold; }
+        .card-front { background: white; transform: rotateY(180deg); }
+        .card.matched .card-front { background-color: #dff9fb; border-color: #2ecc71; color: #27ae60; }
+        .card-front img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .card-front.text-node { font-size: 0.65rem; font-weight: bold; line-height: 1.2; color: #34495e; overflow: hidden; }
+        
+        /* Мобильный экран разблокировки звука */
+        .start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(247,249,252,1); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100; padding: 20px;
+        }
+        .start-btn {
+            padding: 15px 40px; font-size: 1.2rem; font-weight: bold;
+            background: #2ecc71; color: white; border: none; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 5px 0 #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="start-screen" id="start-screen">
+        <h2 style="text-align:center; margin-bottom:20px;">Kitchen Audio Memory 🧠🔊</h2>
+        <button class="start-btn" onclick="unlockAndStart()">START GAME 🔊</button>
+    </div>
+
+    <h1>Kitchen Audio Memory</h1>
+    <div class="status-text" id="status-message">Find 10 matching pairs!</div>
+    <div class="memory-grid" id="game-grid"></div>
+
+    <script>
+        const fullVocabulary = [
+            { id: 1, type: "word", content: "img/Add.png", matchId: 1, textToSpeak: "add" },
+            { id: 1, type: "def", content: "put some salt to the potatoes", matchId: 1, textToSpeak: "put some salt to the potatoes" },
+            { id: 2, type: "word", content: "img/Bake.png", matchId: 2, textToSpeak: "bake" },
+            { id: 2, type: "def", content: "cook a cake in the oven", matchId: 2, textToSpeak: "cook a cake in the oven" },
+            { id: 3, type: "word", content: "img/Beat.png", matchId: 3, textToSpeak: "beat" },
+            { id: 3, type: "def", content: "mix eggs fast with a fork", matchId: 3, textToSpeak: "mix eggs fast with a fork" },
+            { id: 4, type: "word", content: "img/Boil1.png", matchId: 4, textToSpeak: "boil" },
+            { id: 4, type: "def", content: "cook in hot water", matchId: 4, textToSpeak: "cook in hot water" },
+            { id: 5, type: "word", content: "img/Chop.png", matchId: 5, textToSpeak: "chop" },
+            { id: 5, type: "def", content: "cut into small pieces", matchId: 5, textToSpeak: "cut into small pieces" },
+            { id: 6, type: "word", content: "img/fry.png", matchId: 6, textToSpeak: "fry" },
+            { id: 6, type: "def", content: "cook in hot oil", matchId: 6, textToSpeak: "cook in hot oil" },
+            { id: 7, type: "word", content: "img/Mix1.png", matchId: 7, textToSpeak: "mix" },
+            { id: 7, type: "def", content: "mix several ingredients together", matchId: 7, textToSpeak: "mix several ingredients together" },
+            { id: 8, type: "word", content: "img/peel.png", matchId: 8, textToSpeak: "peel" },
+            { id: 8, type: "def", content: "cut off the red part of an apple", matchId: 8, textToSpeak: "cut off the red part of an apple" },
+            { id: 9, type: "word", content: "img/pour some milk.png", matchId: 9, textToSpeak: "pour" },
+            { id: 9, type: "def", content: "pour some milk into a glass", matchId: 9, textToSpeak: "pour some milk into a glass" },
+            { id: 10, type: "word", content: "img/Roast.png", matchId: 10, textToSpeak: "roast" },
+            { id: 10, type: "def", content: "cook meat in the oven", matchId: 10, textToSpeak: "cook meat in the oven" },
+            { id: 11, type: "word", content: "img/set the table.png", matchId: 11, textToSpeak: "set the table" },
+            { id: 11, type: "def", content: "prepare the table before a meal", matchId: 11, textToSpeak: "prepare the table before a meal" },
+            { id: 12, type: "word", content: "img/Slice.png", matchId: 12, textToSpeak: "slice" },
+            { id: 12, type: "def", content: "cut bread into thin pieces", matchId: 12, textToSpeak: "cut bread into thin pieces" }
+        ];
+
+        let firstCard = null; let secondCard = null; let lockGrid = false; let matchedPairs = 0;
+
+        function unlockAndStart() {
+            // Активация TTS для мобильных iOS/Android
+            let u = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(u);
+            
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("game-grid").style.display = "grid";
+            createBoard();
+        }
+
+        function selectRandomPairs() {
+            const pairIds = [];
+            while (pairIds.length < 10) {
+                const randomId = Math.floor(Math.random() * 12) + 1;
+                if (!pairIds.includes(randomId)) pairIds.push(randomId);
+            }
+            return fullVocabulary.filter(item => pairIds.includes(item.matchId));
+        }
+
+        function speakDefinition(text, callback) {
+            lockGrid = true;
+            document.getElementById("game-grid").classList.add("grid-locked");
+            const sm = document.getElementById("status-message");
+            sm.innerText = "📢 Listening..."; sm.classList.add("speaking");
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; utterance.rate = 0.85;
+
+            const endSpeech = () => {
+                lockGrid = false;
+                document.getElementById("game-grid").classList.remove("grid-locked");
+                sm.innerText = "Find matching pairs!"; sm.classList.remove("speaking");
+                if (callback) callback();
+            };
+            utterance.onend = endSpeech; utterance.onerror = endSpeech;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function createBoard() {
+            const grid = document.getElementById("game-grid");
+            const gameData = [...selectRandomPairs()].sort(() => Math.random() - 0.5);
+
+            gameData.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "card"; card.dataset.matchId = item.matchId;
+                card.dataset.type = item.type; card.dataset.audio = item.textToSpeak;
+
+                const back = document.createElement("div"); back.className = "card-back"; back.innerText = "🍳";
+                const front = document.createElement("div"); front.className = "card-front";
+
+                if (item.type === "word") {
+                    front.innerHTML = `<img src="${item.content}" alt="">`;
+                } else {
+                    front.className = "card-front text-node"; front.innerText = item.content;
+                }
+
+                card.appendChild(back); card.appendChild(front);
+                card.onclick = () => flipCard(card); grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (lockGrid || card === firstCard || card.classList.contains('matched') || card.classList.contains('flipped')) return;
+            card.classList.add("flipped");
+
+            speakDefinition(card.dataset.audio, () => {
+                if (!firstCard) { firstCard = card; } 
+                else { secondCard = card; checkMatch(); }
+            });
+        }
+
+        function checkMatch() {
+            const isMatch = (firstCard.dataset.matchId === secondCard.dataset.matchId) && (firstCard.dataset.type !== secondCard.dataset.type);
+            if (isMatch) {
+                firstCard.classList.add("matched"); secondCard.classList.add("matched");
+                firstCard = null; secondCard = null; matchedPairs++;
+                if (matchedPairs === 10) {
+                    document.getElementById("status-message").innerHTML = "🏆 Well done! You won! 🏆";
+                }
+            } else {
+                lockGrid = true; document.getElementById("game-grid").classList.add("grid-locked");
+                setTimeout(() => {
+                    firstCard.classList.remove("flipped"); secondCard.classList.remove("flipped");
+                    firstCard = null; secondCard = null; lockGrid = false;
+                    document.getElementById("game-grid").classList.remove("grid-locked");
+                }, 800);
+            }
+        }
+    </script>
+</body>
+</html>
