@@ -62,65 +62,99 @@
     </div>
     <div id="score-board"></div>
     <button class="reset-btn" id="reset-btn" onclick="location.reload()">Play Again!</button>
-    <script>
-        const data = [
-            { id: 1, word: "add", def: "put some salt to the potatoes", img: "img/Add.png" },
-            { id: 2, word: "bake", def: "cook a cake in the oven", img: "img/Bake.png" },
-            { id: 3, word: "beat", def: "mix eggs fast with a fork", img: "img/Beat.png" },
-            { id: 4, word: "boil", def: "cook in hot water", img: "img/Boil1.png" },
-            { id: 5, word: "chop", def: "cut into small pieces", img: "img/Chop.png" },
-            { id: 6, word: "fry", def: "cook in hot oil", img: "img/fry.png" },
-            { id: 7, word: "mix", def: "mix several ingredients together", img: "img/Mix1.png" },
-            { id: 8, word: "peel", def: "cut off the red part of an apple", img: "img/peel.png" },
-            { id: 9, word: "pour", def: "pour some milk into a glass", img: "img/pour some milk.png" },
-            { id: 10, word: "roast", def: "cook meat in the oven", img: "img/Roast.png" },
-            { id: 11, word: "set the table", def: "prepare the table before a meal", img: "img/set the table.png" },
-            { id: 12, word: "slice", def: "cut bread into thin pieces", img: "img/Slice.png" }
-        ];
-        let selectedDef = null; let selectedVerb = null; let matchesFound = 0;
-        function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
-        function initGame() {
-            const defsColumn = document.getElementById('defs-column');
-            const verbsColumn = document.getElementById('verbs-column');
-            shuffle([...data]).forEach(item => {
-                const div = document.createElement('div'); div.className = 'item definition-item';
-                div.innerText = item.def; div.dataset.id = item.id;
-                div.onclick = () => selectItem(div, 'def'); defsColumn.appendChild(div);
-            });
-            shuffle([...data]).forEach(item => {
-                const div = document.createElement('div'); div.className = 'item verb-item';
-                div.innerHTML = `<img src="${item.img}" alt=""> <span>${item.word}</span>`;
-                div.dataset.id = item.id; div.onclick = () => selectItem(div, 'verb');
-                verbsColumn.appendChild(div);
-            });
+   <script>
+    const data = [
+        { id: 1, word: "add", def: "put some salt to the potatoes", img: "img/Add.png" },
+        { id: 2, word: "bake", def: "cook a cake in the oven", img: "img/Bake.png" },
+        { id: 3, word: "beat", def: "mix eggs fast with a fork", img: "img/Beat.png" },
+        { id: 4, word: "boil", def: "cook in hot water", img: "img/Boil1.png" },
+        { id: 5, word: "chop", def: "cut into small pieces", img: "img/Chop.png" },
+        { id: 6, word: "fry", def: "cook in hot oil", img: "img/fry.png" },
+        { id: 7, word: "mix", def: "mix several ingredients together", img: "img/Mix1.png" },
+        { id: 8, word: "peel", def: "cut off the red part of an apple", img: "img/peel.png" },
+        { id: 9, word: "pour", def: "pour some milk into a glass", img: "img/pour some milk.png" },
+        { id: 10, word: "roast", def: "cook meat in the oven", img: "img/Roast.png" },
+        { id: 11, word: "set the table", def: "prepare the table before a meal", img: "img/set the table.png" },
+        { id: 12, word: "slice", def: "cut bread into thin pieces", img: "img/Slice.png" }
+    ];
+
+    let selectedDef = null; 
+    let selectedVerb = null; 
+    let matchesFound = 0;
+
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+    function initGame() {
+        const defsColumn = document.getElementById('defs-column');
+        const verbsColumn = document.getElementById('verbs-column');
+        
+        defsColumn.innerHTML = "";
+        verbsColumn.innerHTML = "";
+
+        shuffle([...data]).forEach(item => {
+            const div = document.createElement('div'); 
+            div.className = 'item definition-item';
+            div.innerText = item.def; 
+            div.dataset.id = item.id;
+            div.onclick = () => selectItem(div, 'def'); 
+            defsColumn.appendChild(div);
+        });
+
+        shuffle([...data]).forEach(item => {
+            const div = document.createElement('div'); 
+            div.className = 'item verb-item';
+            div.innerHTML = `<img src="${item.img}" alt=""> <span>${item.word}</span>`;
+            div.dataset.id = item.id; 
+            div.onclick = () => selectItem(div, 'verb'); 
+            verbsColumn.appendChild(div);
+        });
+    }
+
+    function selectItem(el, type) {
+        if (el.classList.contains('matched')) return;
+
+        if (type === 'def') {
+            if (selectedDef) selectedDef.classList.remove('selected');
+            selectedDef = el;
+        } else {
+            if (selectedVerb) selectedVerb.classList.remove('selected');
+            selectedVerb = el;
         }
-        function selectItem(el, type) {
-            if (el.classList.contains('matched')) return;
-            if (type === 'def') {
-                if (selectedDef) selectedDef.classList.remove('selected');
-                selectedDef = el;
-            } else {
-                if (selectedVerb) selectedVerb.classList.remove('selected');
-                selectedVerb = el;
-            }
-            el.classList.add('selected');
-            if (selectedDef && selectedVerb) {
-                if (selectedDef.dataset.id === selectedVerb.dataset.id) {
-                    selectedDef.className = 'item matched'; selectedVerb.className = 'item matched';
-                    selectedDef = null; selectedVerb = null; matchesFound++;
-                    if (matchesFound === data.length) {
-                        document.getElementById('score-board').innerText = "Perfect! All matched! 🌟";
-                        document.getElementById('reset-btn').style.display = "block";
-                    }
-                } else {
-                    const d = selectedDef; const v = selectedVerb;
-                    d.classList.add('error'); v.classList.add('error');
-                    selectedDef = null; selectedVerb = null;
-                    setTimeout(() => { d.classList.remove('selected', 'error'); v.classList.remove('selected', 'error'); }, 400);
+        el.classList.add('selected');
+
+        if (selectedDef && selectedVerb) {
+            if (selectedDef.dataset.id === selectedVerb.dataset.id) {
+                // ИСПРАВЛЕНО: Безопасное добавление класса без разрушения структуры колонок
+                selectedDef.classList.remove('selected');
+                selectedVerb.classList.remove('selected');
+                selectedDef.classList.add('matched'); 
+                selectedVerb.classList.add('matched');
+                
+                selectedDef = null; 
+                selectedVerb = null; 
+                matchesFound++;
+
+                if (matchesFound === data.length) {
+                    document.getElementById('score-board').innerText = "Perfect! All matched! 🌟";
+                    document.getElementById('reset-btn').style.display = "inline-block";
                 }
+            } else {
+                const d = selectedDef; 
+                const v = selectedVerb;
+                d.classList.add('error'); 
+                v.classList.add('error');
+                selectedDef = null; 
+                selectedVerb = null;
+                
+                setTimeout(() => { 
+                    d.classList.remove('selected', 'error'); 
+                    v.classList.remove('selected', 'error'); 
+                }, 400);
             }
         }
-        window.onload = initGame;
-    </script>
+    }
+
+    window.onload = initGame;
+</script>
 </body>
 </html>
